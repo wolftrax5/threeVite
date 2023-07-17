@@ -1,4 +1,6 @@
 import * as THREE from 'three'
+import WebGL from 'three/addons/capabilities/WebGL.js';
+import gsap from 'gsap'
 
 const SIZE = {
     width : 500,
@@ -35,10 +37,26 @@ const material = new THREE.MeshBasicMaterial({
     wireframe: true,
 })
 // a mesh needs a shader and a material
-const cube = new THREE.Mesh(geometry, material)
-/** ******* */
 
+const cube = new THREE.Mesh(geometry, material)
 scene.add(cube)
+/** ******* */
+/** GROUPS */
+const group = new THREE.Group()
+group.scale.y = 2
+group.rotation.y = 2
+scene.add(group)
+
+const cube1 = new THREE.Mesh(new THREE.BoxGeometry(1,1,1), new THREE.MeshBasicMaterial({color: 0xff00ff}))
+cube1.position.x = -2
+const cube2 = new THREE.Mesh(new THREE.BoxGeometry(1,1,1), new THREE.MeshBasicMaterial({color: 0xf1f10f}))
+cube2.position.x = 2
+group.add(cube1)
+group.add(cube2)
+
+/******** */
+
+
 
 window.addEventListener('resize', onWindowResize, false)
 function onWindowResize() {
@@ -47,16 +65,39 @@ function onWindowResize() {
     renderer.setSize(SIZE.width, SIZE.height)
     render()
 }
+//// Clock - interal solition for deltaTime
+const clock = new THREE.Clock()
+// Green Sock move.
+//gsap.to(cube.position, {duration: 1, delay:1, x:-2})
 
 function animate() {
-    requestAnimationFrame(animate)
-    cube.rotation.x += 0.01
-    cube.rotation.y += 0.01
+    //Clock
+    const elapsedTime = clock.getElapsedTime();
+    //Update objects
+    cube.rotation.x = elapsedTime;
+    cube.rotation.y = elapsedTime;
+    cube.position.x = Math.cos(elapsedTime);
+    cube.position.y = Math.sin(elapsedTime)
+
+    camera.position.x = -Math.cos(elapsedTime);
+    camera.position.y = Math.sin(elapsedTime);
+    camera.lookAt(cube.position)
+    // Render
     render()
+
+    requestAnimationFrame(animate)
 }
 
 function render() {
     renderer.render(scene, camera)
 }
 
-animate();
+// WebGL compatibility check
+if ( WebGL.isWebGLAvailable() ) {
+	// Initiate function or other initializations here
+	animate();
+
+} else {
+	const warning = WebGL.getWebGLErrorMessage();
+	alert( warning );
+}
