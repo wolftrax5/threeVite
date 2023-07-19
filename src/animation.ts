@@ -1,11 +1,23 @@
 import * as THREE from 'three'
+import { OrbitControls } from 'three/addons/controls/OrbitControls'
 import WebGL from 'three/addons/capabilities/WebGL.js';
-import gsap from 'gsap'
 
 const SIZE = {
     width : 500,
-    height:300.
+    height: 400,
 }
+const CANVAS = document.getElementById("animation") as HTMLCanvasElement
+/**
+ * Cursor
+ */
+const CURSOR = {
+    x:0,
+    y:0
+}
+window.addEventListener('mousemove', (event:MouseEvent)=> {
+    CURSOR.x = event.clientX / SIZE.width - 0.5;
+    CURSOR.y = - (event.clientY / SIZE.height - 0.5);
+});
 // SCENE
 const scene = new THREE.Scene()
 /** CAMERA */
@@ -23,9 +35,13 @@ const camera = new THREE.PerspectiveCamera(
 camera.position.z = 4
 /** ******* */
 
+// Controls
+const CONTROLS = new OrbitControls(camera, CANVAS);
+CONTROLS.enableDamping = true
+/** ******* */
 /** Render */
 const renderer = new THREE.WebGLRenderer({
-    canvas: document.getElementById("animation") as HTMLCanvasElement
+    canvas: CANVAS
 })
 renderer.setSize(SIZE.width, SIZE.height)
 /** ******* */
@@ -41,18 +57,19 @@ const material = new THREE.MeshBasicMaterial({
 const cube = new THREE.Mesh(geometry, material)
 scene.add(cube)
 /** ******* */
-/** GROUPS */
-const group = new THREE.Group()
-group.scale.y = 2
-group.rotation.y = 2
-scene.add(group)
 
-const cube1 = new THREE.Mesh(new THREE.BoxGeometry(1,1,1), new THREE.MeshBasicMaterial({color: 0xff00ff}))
-cube1.position.x = -2
-const cube2 = new THREE.Mesh(new THREE.BoxGeometry(1,1,1), new THREE.MeshBasicMaterial({color: 0xf1f10f}))
-cube2.position.x = 2
-group.add(cube1)
-group.add(cube2)
+/** GROUPS */
+// const group = new THREE.Group()
+// group.scale.y = 2
+// group.rotation.y = 2
+// scene.add(group)
+
+// const cube1 = new THREE.Mesh(new THREE.BoxGeometry(1,1,1), new THREE.MeshBasicMaterial({color: 0xff00ff}))
+// cube1.position.x = -2
+// const cube2 = new THREE.Mesh(new THREE.BoxGeometry(1,1,1), new THREE.MeshBasicMaterial({color: 0xf1f10f}))
+// cube2.position.x = 2
+// group.add(cube1)
+// group.add(cube2)
 
 /******** */
 
@@ -65,23 +82,19 @@ function onWindowResize() {
     renderer.setSize(SIZE.width, SIZE.height)
     render()
 }
-//// Clock - interal solition for deltaTime
+//// Clock - internal solution for deltaTime
 const clock = new THREE.Clock()
-// Green Sock move.
-//gsap.to(cube.position, {duration: 1, delay:1, x:-2})
 
 function animate() {
     //Clock
-    const elapsedTime = clock.getElapsedTime();
-    //Update objects
-    cube.rotation.x = elapsedTime;
-    cube.rotation.y = elapsedTime;
-    cube.position.x = Math.cos(elapsedTime);
-    cube.position.y = Math.sin(elapsedTime)
-
-    camera.position.x = -Math.cos(elapsedTime);
-    camera.position.y = Math.sin(elapsedTime);
-    camera.lookAt(cube.position)
+    // const elapsedTime = clock.getElapsedTime();
+    // Update Camera
+    // camera.position.x = Math.sin(CURSOR.x * Math.PI * 2) * 3
+    // camera.position.z = Math.cos(CURSOR.x * Math.PI * 2) * 3
+    // camera.position.y = CURSOR.y * 5
+    // camera.lookAt(cube.position)
+    // Update Controls
+    CONTROLS.update()
     // Render
     render()
 
