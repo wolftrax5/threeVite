@@ -3,8 +3,8 @@ import { OrbitControls } from 'three/addons/controls/OrbitControls'
 import WebGL from 'three/addons/capabilities/WebGL.js';
 
 const SIZE = {
-    width : 500,
-    height: 400,
+    width : window.innerWidth,
+    height: window.innerHeight,
 }
 const CANVAS = document.getElementById("animation") as HTMLCanvasElement
 /**
@@ -44,6 +44,8 @@ const renderer = new THREE.WebGLRenderer({
     canvas: CANVAS
 })
 renderer.setSize(SIZE.width, SIZE.height)
+// Limit the pixel ratio at 2, more is unnecessary and affect the performance
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
 /** ******* */
 
 /** Object */
@@ -56,32 +58,29 @@ const material = new THREE.MeshBasicMaterial({
 
 const cube = new THREE.Mesh(geometry, material)
 scene.add(cube)
-/** ******* */
 
-/** GROUPS */
-// const group = new THREE.Group()
-// group.scale.y = 2
-// group.rotation.y = 2
-// scene.add(group)
-
-// const cube1 = new THREE.Mesh(new THREE.BoxGeometry(1,1,1), new THREE.MeshBasicMaterial({color: 0xff00ff}))
-// cube1.position.x = -2
-// const cube2 = new THREE.Mesh(new THREE.BoxGeometry(1,1,1), new THREE.MeshBasicMaterial({color: 0xf1f10f}))
-// cube2.position.x = 2
-// group.add(cube1)
-// group.add(cube2)
-
-/******** */
-
-
-
+/**
+ * RESIZING
+ */
 window.addEventListener('resize', onWindowResize, false)
 function onWindowResize() {
-    camera.aspect = ASR
+    SIZE.width = window.innerWidth;
+    SIZE.height = window.innerHeight;
+    camera.aspect = SIZE.width / SIZE.height;
     camera.updateProjectionMatrix()
     renderer.setSize(SIZE.width, SIZE.height)
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
     render()
 }
+
+window.addEventListener('dblclick', ()=> {
+    if(!document.fullscreenElement){
+        CANVAS.requestFullscreen()
+    }else{
+        document.exitFullscreen()
+    }
+})
+/*****************************************/
 //// Clock - internal solution for deltaTime
 const clock = new THREE.Clock()
 
