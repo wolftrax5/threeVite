@@ -48,6 +48,21 @@ renderer.setSize(SIZE.width, SIZE.height)
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
 /** ******* */
 
+/** Custom Object Geometry */
+const vertices = new Float32Array( [
+	-1.0, -1.0,  1.0, // v0
+	 1.0, -1.0,  1.0, // v1
+	 1.0,  1.0,  1.0, // v2
+] );
+const positionsAttribute = new THREE.BufferAttribute(vertices, 3);
+const customGeometry = new THREE.BufferGeometry();
+customGeometry.setAttribute('position', positionsAttribute);
+const customMaterial = new THREE.MeshBasicMaterial({
+    color: 0x0000ff,
+})
+const customObject = new THREE.Mesh(customGeometry, customMaterial)
+scene.add(customObject)
+/* ************ */
 /** Object */
 const geometry = new THREE.BoxGeometry()
 const material = new THREE.MeshBasicMaterial({
