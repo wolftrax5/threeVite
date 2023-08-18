@@ -48,6 +48,60 @@ renderer.setSize(SIZE.width, SIZE.height)
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
 /** ******* */
 
+/*** TEXTURE */
+const IMAGE_SOURCE = 'static/textures/door/color.jpg'
+
+/// Using Native JS way
+const image = new Image()
+const dirtyTexture = new THREE.Texture(image)
+image.addEventListener('load', ()=> {
+    dirtyTexture.needsUpdate = true
+})
+image.src= IMAGE_SOURCE
+///////////////////////
+/// Using textureLoader
+const textureLoader = new THREE.TextureLoader();
+const textureColor = textureLoader.load(IMAGE_SOURCE,
+    ()=>{
+    console.log('textureLoader finished')
+    },
+      ()=>{
+    console.log('textureLoader Progressing')
+    },
+      ()=>{
+    console.log('textureLoader Error')
+    },
+)
+
+textureColor.rotation = Math.PI / 4
+///////////////////////
+/// Using LoadingManager
+const loadingManager = new THREE.LoadingManager();
+loadingManager.onStart = () => {
+    console.log('loadingManager Started')
+}
+loadingManager.onLoad = () => {
+    console.log('loadingManager Finished')
+}
+loadingManager.onProgress = () => {
+    console.log('loadingManager progressing')
+}
+loadingManager.onError = () => {
+    console.log('loadingManager error')
+}
+
+const manneredTextureLoader = new THREE.TextureLoader(loadingManager);
+const colorTexture = manneredTextureLoader.load('static/textures/door/color.jpg')
+const alphaTexture = manneredTextureLoader.load('static/textures/door/alpha.jpg')
+const ambientOcclusionTexture = manneredTextureLoader.load('static/textures/door/ambientOcclusion.jpg')
+const heigthTexture = manneredTextureLoader.load('static/textures/door/height.jpg')
+const normalTexture = manneredTextureLoader.load('static/textures/door/normal.jpg')
+const metalnessTexture = manneredTextureLoader.load('static/textures/door/metalness.jpg')
+const roughnessTexture = manneredTextureLoader.load('static/textures/door/roughness.jpg')
+///////////////////////
+
+/*********** */
+
 /** Custom Object Geometry */
 const vertices = new Float32Array( [
 	-1.0, -1.0,  1.0, // v0
@@ -58,7 +112,8 @@ const positionsAttribute = new THREE.BufferAttribute(vertices, 3);
 const customGeometry = new THREE.BufferGeometry();
 customGeometry.setAttribute('position', positionsAttribute);
 const customMaterial = new THREE.MeshBasicMaterial({
-    color: 0x0000ff,
+  
+    map: dirtyTexture
 })
 const customObject = new THREE.Mesh(customGeometry, customMaterial)
 scene.add(customObject)
@@ -66,13 +121,17 @@ scene.add(customObject)
 /** Object */
 const geometry = new THREE.BoxGeometry()
 const material = new THREE.MeshBasicMaterial({
-    color: 0x00ff00,
-    wireframe: true,
+    map: textureColor
 })
 // a mesh needs a shader and a material
 
 const cube = new THREE.Mesh(geometry, material)
 scene.add(cube)
+const door = new THREE.Mesh(new THREE.BoxGeometry(), new THREE.MeshBasicMaterial({
+    map: heigthTexture
+}))
+door.position.x = 2
+scene.add(door)
 
 /**
  * RESIZING
