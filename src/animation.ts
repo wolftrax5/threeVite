@@ -1,7 +1,13 @@
 import * as THREE from 'three'
 import { OrbitControls } from 'three/addons/controls/OrbitControls'
 import WebGL from 'three/addons/capabilities/WebGL.js';
+import * as lil from 'lil-gui'
 
+/**
+ * Debug
+ */
+const gui = new lil.GUI()
+/**************************/
 const SIZE = {
     width : window.innerWidth,
     height: window.innerHeight,
@@ -99,7 +105,30 @@ const normalTexture = manneredTextureLoader.load('static/textures/door/normal.jp
 const metalnessTexture = manneredTextureLoader.load('static/textures/door/metalness.jpg')
 const roughnessTexture = manneredTextureLoader.load('static/textures/door/roughness.jpg')
 ///////////////////////
+// Environment map
+const cubeTextureLoader = new THREE.CubeTextureLoader()
+const environmentMap = cubeTextureLoader.load([
+    'static/textures/environmentMaps/0/px.jpg',
+    'static/textures/environmentMaps/0/nx.jpg',
+    'static/textures/environmentMaps/0/py.jpg',
+    'static/textures/environmentMaps/0/ny.jpg',
+    'static/textures/environmentMaps/0/pz.jpg',
+    'static/textures/environmentMaps/0/nz.jpg',
+])
+/***************** */
 
+/*** Lights */
+
+/**
+ * 
+const ambientLight = new THREE.AmbientLight(0xffffff, 0.5)
+scene.add(ambientLight)
+*/
+const pointLight = new THREE.PointLight(0xffffff, 0.5)
+pointLight.position.x = 2
+pointLight.position.y = 3
+pointLight.position.z = 4
+scene.add(pointLight)
 /*********** */
 
 /** Custom Object Geometry */
@@ -116,22 +145,44 @@ const customMaterial = new THREE.MeshBasicMaterial({
     map: dirtyTexture
 })
 const customObject = new THREE.Mesh(customGeometry, customMaterial)
-scene.add(customObject)
+//scene.add(customObject)
 /* ************ */
 /** Object */
 const geometry = new THREE.BoxGeometry()
 const material = new THREE.MeshBasicMaterial({
     map: textureColor
 })
+const basicMaterial = new THREE.MeshStandardMaterial();
+basicMaterial.metalness = 0.7
+basicMaterial.roughness = 0.2
+basicMaterial.envMap = environmentMap
+gui.add(basicMaterial, 'metalness').min(0).max(1).step(0.0001)
+gui.add(basicMaterial, 'roughness').min(0).max(1).step(0.0001)
+
+const sphere = new THREE.Mesh(
+    new THREE.SphereGeometry(0.5,16,16),
+    basicMaterial
+)
+sphere.position.x = -2
+const plane = new THREE.Mesh(
+    new THREE.PlaneGeometry(1,1),
+    basicMaterial
+)
+const torus = new THREE.Mesh(
+    new THREE.TorusGeometry(0.3,0.2,16,32),
+    basicMaterial
+)
+torus.position.x = 2
+scene.add(sphere, plane, torus)
 // a mesh needs a shader and a material
 
 const cube = new THREE.Mesh(geometry, material)
-scene.add(cube)
+// scene.add(cube)
 const door = new THREE.Mesh(new THREE.BoxGeometry(), new THREE.MeshBasicMaterial({
     map: heigthTexture
 }))
 door.position.x = 2
-scene.add(door)
+// scene.add(door)
 
 /**
  * RESIZING
@@ -160,12 +211,20 @@ const clock = new THREE.Clock()
 
 function animate() {
     //Clock
-    // const elapsedTime = clock.getElapsedTime();
+     const elapsedTime = clock.getElapsedTime();
     // Update Camera
     // camera.position.x = Math.sin(CURSOR.x * Math.PI * 2) * 3
     // camera.position.z = Math.cos(CURSOR.x * Math.PI * 2) * 3
     // camera.position.y = CURSOR.y * 5
-    // camera.lookAt(cube.position)
+    //camera.lookAt(plane.position)
+     sphere.rotation.y = 0.1 * elapsedTime;
+     plane.rotation.y = 0.1 * elapsedTime;
+     torus.rotation.y = 0.1 * elapsedTime;
+
+     sphere.rotation.x = 0.15 * elapsedTime;
+     plane.rotation.x = 0.15 * elapsedTime;
+     torus.rotation.x = 0.15 * elapsedTime;
+
     // Update Controls
     CONTROLS.update()
     // Render
