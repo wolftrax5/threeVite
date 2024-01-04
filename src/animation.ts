@@ -20,22 +20,67 @@ const scene = new THREE.Scene()
 /**
  * Lights
  */
-const ambientLight = new THREE.AmbientLight(0xffffff, 0.5)
+const ambientLight = new THREE.AmbientLight(0xffffff, 0.1)
 scene.add(ambientLight)
 //Debug lights
 gui.add(ambientLight, 'intensity').min(0).max(1).step(0.01)
 
-const directionalLight = new THREE.DirectionalLight(0x00fffc,0.3)
-directionalLight.position.set(1,0.25,0)
-//scene.add(directionalLight)
+const directionalLight = new THREE.DirectionalLight(0xffffff,1.1)
+directionalLight.position.set(1,1,1)
+// directional shadow
+directionalLight.castShadow = true;
 
-const hemisphereLight = new THREE.HemisphereLight(0xff0000, 0x0000ff, 1)
-scene.add(hemisphereLight)
+directionalLight.shadow.mapSize.width = 1024;
+directionalLight.shadow.mapSize.height = 1024;
+
+// Blur the shadow
+directionalLight.shadow.radius = 5;
+
+directionalLight.shadow.camera.near = 1;
+directionalLight.shadow.camera.far = 4;
+directionalLight.shadow.camera.top = 2;
+directionalLight.shadow.camera.right = 2;
+directionalLight.shadow.camera.bottom = -2;
+directionalLight.shadow.camera.left = -2;
+
+const directionalLightCameraHelper = new THREE.CameraHelper(directionalLight.shadow.camera);
+directionalLightCameraHelper.visible = false;
+gui.add(directionalLightCameraHelper, 'visible').name( 'Shadow Camera of DL  Debug' )
+
+scene.add(directionalLight, directionalLightCameraHelper)
 
 
 const pointLight = new THREE.PointLight(0xfff00f, 0.5, 3, 2)
-pointLight.position.set(1,-0.5,1)
-scene.add(pointLight)
+pointLight.castShadow = true;
+pointLight.position.set(-1, 1,0)
+
+pointLight.shadow.mapSize.width = 1024;
+pointLight.shadow.mapSize.height = 1024;
+pointLight.shadow.camera.near = 0.1;
+pointLight.shadow.camera.far = 4;
+
+
+const pointLightCameraHelper = new THREE.CameraHelper(pointLight.shadow.camera);
+pointLightCameraHelper.visible = false;
+gui.add(pointLightCameraHelper, 'visible').name( 'Shadow Camera of Point L Debug' )
+
+scene.add(pointLight, pointLightCameraHelper)
+
+const spotLight = new THREE.SpotLight(0xffffff, 2.4,10, Math.PI * 0.3);
+spotLight.castShadow = true
+spotLight.position.set(0,3,2)
+
+spotLight.shadow.mapSize.width = 1024;
+spotLight.shadow.mapSize.height = 1024;
+spotLight.shadow.camera.near = 1;
+spotLight.shadow.camera.far = 4;
+
+const spotLightCameraHelper = new THREE.CameraHelper(spotLight.shadow.camera);
+spotLightCameraHelper.visible = false;
+gui.add(spotLightCameraHelper, 'visible').name( 'Shadow Camera of Spot  Debug' )
+
+scene.add(spotLight, spotLightCameraHelper)
+scene.add(spotLight.target)
 /**
  * Objects
  */
@@ -48,27 +93,17 @@ const sphere = new THREE.Mesh(
     new THREE.SphereGeometry(0.5, 32, 32),
     material
 )
-sphere.position.x = - 1.5
-
-const cube = new THREE.Mesh(
-    new THREE.BoxGeometry(0.75, 0.75, 0.75),
-    material
-)
-
-const torus = new THREE.Mesh(
-    new THREE.TorusGeometry(0.3, 0.2, 32, 64),
-    material
-)
-torus.position.x = 1.5
+sphere.castShadow = true;
 
 const plane = new THREE.Mesh(
     new THREE.PlaneGeometry(5, 5),
     material
 )
 plane.rotation.x = - Math.PI * 0.5
-plane.position.y = - 0.65
+plane.position.y = - 0.5
+plane.receiveShadow = true;
 
-scene.add(sphere, cube, torus, plane)
+scene.add(sphere, plane)
 
 /**
  * Sizes
@@ -116,6 +151,8 @@ const renderer = new THREE.WebGLRenderer({
 renderer.outputColorSpace = THREE.LinearSRGBColorSpace
 renderer.setSize(sizes.width, sizes.height)
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
+renderer.shadowMap.enabled = true
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 
 /**
  * Animate
@@ -127,13 +164,6 @@ const tick = () =>
     const elapsedTime = clock.getElapsedTime()
 
     // Update objects
-    sphere.rotation.y = 0.1 * elapsedTime
-    cube.rotation.y = 0.1 * elapsedTime
-    torus.rotation.y = 0.1 * elapsedTime
-
-    sphere.rotation.x = 0.15 * elapsedTime
-    cube.rotation.x = 0.15 * elapsedTime
-    torus.rotation.x = 0.15 * elapsedTime
 
     // Update controls
     controls.update()
